@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Backendless from 'backendless';
-import {useNavigate} from "react-router-dom";
-
+import { useNavigate } from 'react-router-dom';
+import './RegistrationForm.css'; // Імпорт CSS файлу
 
 function RegistrationForm() {
     const [formData, setFormData] = useState({
@@ -11,8 +11,12 @@ function RegistrationForm() {
         age: '',
         gender: '',
         country: '',
-        error: ''
+        error: '',
+        passwordError: '',
+        ageError: '',
+        emailError: ''
     });
+
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -25,21 +29,37 @@ function RegistrationForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const {email, password, name, age, gender, country} = formData;
+        const { email, password, name, age, gender, country } = formData;
+        let hasError = false;
+
+        setFormData({
+            ...formData,
+            error: '',
+            passwordError: '',
+            ageError: '',
+            emailError: ''
+        });
 
         try {
             if (password.length < 6) {
-                throw new Error('Пароль повинен містити принаймні 6 символів');
+                setFormData(prevState => ({ ...prevState, passwordError: 'Пароль повинен містити принаймні 6 символів' }));
+                hasError = true;
             }
 
             const parsedAge = parseInt(age);
             if (isNaN(parsedAge) || parsedAge < 5) {
-                throw new Error('Ви повинні бути старше 5 років для реєстрації');
+                setFormData(prevState => ({ ...prevState, ageError: 'Ви повинні бути старше 5 років для реєстрації' }));
+                hasError = true;
             }
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                throw new Error('Введіть коректну адресу електронної пошти');
+                setFormData(prevState => ({ ...prevState, emailError: 'Введіть коректну адресу електронної пошти' }));
+                hasError = true;
+            }
+
+            if (hasError) {
+                return;
             }
 
             const user = {
@@ -52,9 +72,9 @@ function RegistrationForm() {
             };
 
             const work_dir = `/user_files/${user.name}`;
-            await Backendless.Files.createDirectory(work_dir)
+            await Backendless.Files.createDirectory(work_dir);
             const shared_dir = `/user_files/${user.name}/shared_with_me`;
-            await Backendless.Files.createDirectory(shared_dir)
+            await Backendless.Files.createDirectory(shared_dir);
             const registeredUser = await Backendless.UserService.register(user);
 
             console.log('Successfully registered user:', registeredUser);
@@ -66,36 +86,43 @@ function RegistrationForm() {
                 age: '',
                 gender: '',
                 country: '',
-                error: ''
+                error: '',
+                passwordError: '',
+                ageError: '',
+                emailError: ''
             });
         } catch (error) {
             console.error('Error registering user:', error);
-            setFormData({...formData, error: 'Помилка при реєстрації користувача'});
+            setFormData(prevState => ({ ...prevState, error: 'Помилка при реєстрації користувача' }));
         }
     };
 
-    const {email, password, name, age, gender, country, error} = formData;
+
+    const { email, password, name, age, gender, country, error } = formData;
 
     return (
-        <div>
+        <div className="registration-form">
             <h2>Реєстрація нового користувача</h2>
-            {error && <p style={{color: 'red'}}>{error}</p>}
+            {error && <p>{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Email:</label>
-                    <input type="email" name="email" value={email} onChange={handleChange} required/>
+                    <input type="email" name="email" value={email} onChange={handleChange} required />
+                    {formData.emailError && <p className="error">{formData.emailError}</p>}
                 </div>
                 <div>
                     <label>Password:</label>
-                    <input type="password" name="password" value={password} onChange={handleChange} required/>
+                    <input type="password" name="password" value={password} onChange={handleChange} required />
+                    {formData.passwordError && <p className="error">{formData.passwordError}</p>}
                 </div>
                 <div>
                     <label>Ім'я:</label>
-                    <input type="text" name="name" value={name} onChange={handleChange} required/>
+                    <input type="text" name="name" value={name} onChange={handleChange} required />
                 </div>
                 <div>
                     <label>Вік:</label>
-                    <input type="number" name="age" value={age} onChange={handleChange} required/>
+                    <input type="number" name="age" value={age} onChange={handleChange} required />
+                    {formData.ageError && <p className="error">{formData.ageError}</p>}
                 </div>
                 <div>
                     <label>Стать:</label>
@@ -108,12 +135,13 @@ function RegistrationForm() {
                 </div>
                 <div>
                     <label>Країна:</label>
-                    <input type="text" name="country" value={country} onChange={handleChange} required/>
+                    <input type="text" name="country" value={country} onChange={handleChange} required />
                 </div>
                 <button type="submit">Зареєструватися</button>
             </form>
         </div>
     );
+
 }
 
 export default RegistrationForm;

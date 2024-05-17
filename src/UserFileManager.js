@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Backendless from 'backendless';
-import {useNavigate} from "react-router";
+import { useNavigate } from "react-router";
 import axios from 'axios';
-import './FileManager.css'
+import './UserFileManager.css';
 
-const FileManager = obj => {
+const FileManager = () => {
     const [filesList, setFilesList] = useState([]);
     const [directoriesList, setDirectoriesList] = useState([]);
     const [currentDirectory, setCurrentDirectory] = useState('');
@@ -21,8 +21,10 @@ const FileManager = obj => {
 
     const handleCreateFolder = async () => {
         try {
-            await Backendless.Files.createDirectory(`/user_files/${user.name}/${currentDirectory}/${newFolderName}`)
+            const directoryPath = `/user_files/${user.name}/${currentDirectory}/${newFolderName}`;
+            await Backendless.Files.createDirectory(directoryPath);
             fetchFilesList(currentDirectory);
+            setNewFolderName(''); // Очистити поле вводу після створення папки
         } catch (error) {
             console.error('Failed to create folder:', error);
         }
@@ -52,7 +54,7 @@ const FileManager = obj => {
     const handleUploadFile = async (event) => {
         try {
             const file = event.target.files[0];
-            await Backendless.Files.upload(file, `/user_files/${user.name}/${currentDirectory}/${file.name}`);
+            await Backendless.Files.upload(file, `/user_files/${user.name}/${currentDirectory}`);
             fetchFilesList(currentDirectory);
         } catch (error) {
             console.error('Failed to upload file:', error);
@@ -66,14 +68,14 @@ const FileManager = obj => {
                 return;
             }
             const userExists = await Backendless.Data.of("Users")
-                .find(Backendless.DataQueryBuilder.create().setWhereClause("name = ?"), [recipientName]);
+                .find(Backendless.DataQueryBuilder.create().setWhereClause(`name = '${recipientName}'`));
 
             if (userExists.length === 0) {
-                alert('Користувач з вказаним іменем не існує');
+                alert('Вказаного користувача не існує');
                 return;
             }
-            await Backendless.Files.saveFile(`/user_files/${recipientName}/shared_with_me`, `${fileToShare.name}.txt`, fileToShare.publicUrl, true);
-            alert('Файл успішно передано');
+            await Backendless.Files.saveFile(`/user_files/${recipientName}/shared_with_me`, `${fileToShare.name}`, fileToShare.publicUrl, true);
+            alert('Ви успішно поділились файлом');
         } catch (error) {
             console.error('Failed to share file:', error);
         } finally {
@@ -82,20 +84,23 @@ const FileManager = obj => {
     };
 
     const handleDownloadFile = async (file) => {
-        if (currentDirectory.includes('shared_with_me')) {
-            const response = await axios.get(file.publicUrl);
-            const link = response.data;
-            window.open(link, "_blank");
-        }
-        window.open(file.publicUrl, "_blank");
+        const response = await axios.get(file.publicUrl, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', file.name);
+        document.body.appendChild(link);
+        link.click();
     }
 
     const handleExitClick = () => {
         Backendless.UserService.logout().then(() => navigate('/'))
     };
+
     const handleDirectoryClick = (dirName) => {
         setCurrentDirectory(currentDirectory ? `${currentDirectory}/${dirName}` : dirName);
     };
+
     const handleBackClick = () => {
         const dirs = currentDirectory.split('/');
         dirs.pop();
@@ -118,10 +123,10 @@ const FileManager = obj => {
             </h2>
             {isShareModalOpen && (
                 <div className="share-modal">
-                <input type="text" value={recipientName} onChange={e => setRecipientName(e.target.value)}
+                    <input type="text" value={recipientName} onChange={e => setRecipientName(e.target.value)}
                            placeholder="Ім'я користувача"/>
                     <button onClick={handleShareFile}>Поділитися</button>
-                    <button onClick={handleShareModal}>Закрити</button>
+                    <button onClick={() => setIsShareModalOpen(false)}>Закрити</button>
                 </div>
             )}
             <div className="create-folder">
@@ -131,12 +136,6 @@ const FileManager = obj => {
             </div>
             <div className="actions">
                 {currentDirectory && <button onClick={handleBackClick}>Назад</button>}
-                <div className="custom-file-input">
-                    <label htmlFor="file-upload" className="file-label">
-                        Вибрати файл
-                    </label>
-                    <input id="file-upload" type="file" onChange={handleUploadFile}/>
-                </div>
             </div>
             <ul>
                 {directoriesList.map(dir => (
@@ -152,12 +151,16 @@ const FileManager = obj => {
                         <span>{file.name}</span>
                         <button onClick={() => handleDelete(file.name)}>Видалити</button>
                         {currentDirectory !== 'shared_with_me' &&
-                            <button onClick={() => handleShareModal(file)}>Поділитися</button>}
+                            <button onClick={() => handleShareModal(file, true)}>Поділитися</button>}
                         <button className="select-file-button" onClick={() => handleDownloadFile(file)}>Завантажити</button>
                     </li>
                 ))}
             </ul>
+            <div className="custom-file-input">
+                <input id="file-upload" type="file" onChange={handleUploadFile}/>
+            </div>
         </div>
     );
 }
+
 export default FileManager;

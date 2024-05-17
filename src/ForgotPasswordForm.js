@@ -20,8 +20,14 @@ class ForgotPassword extends Component {
         const { email } = this.state;
 
         try {
+            const queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`);
+            const users = await Backendless.Data.of('Users').find(queryBuilder);
+
+            if (users.length === 0) {
+                throw new Error('Користувача з такою електронною поштою не зареєстровано в системі');
+            }
             const response = await Backendless.UserService.restorePassword(email);
-            console.log('Password restoration response:', response); // Вивід відповіді
+            console.log('Password restoration response:', response);
             this.setState({ success: 'Перевірте свою електронну пошту для відновлення пароля', error: '' });
         } catch (error) {
             console.error('Error restoring password:', error);
@@ -31,7 +37,6 @@ class ForgotPassword extends Component {
 
     render() {
         const { email, error, success } = this.state;
-
         return (
             <div>
                 <h2>Відновлення забутого пароля</h2>
