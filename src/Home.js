@@ -35,7 +35,7 @@ const Button = styled.button`
 function Home() {
     return (
         <Container>
-            <Title>Практичне завдання 1-2</Title>
+            <Title>Практичне завдання MBaaS</Title>
             <Link to="/users/register">
                 <Button>Реєстрація</Button>
             </Link>
