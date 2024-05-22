@@ -10,6 +10,7 @@ import Home from "./Home";
 import ForgotPasswordForm from "./main/ForgotPasswordForm";
 import ProfilePage from "./profile/ProfilePage";
 import EditProfile from "./profile/EditProfile";
+import Places from "./profile/Places";
 
 const APP_ID = process.env.REACT_APP_BACKENDLESS_APP_ID;
 const API_KEY = process.env.REACT_APP_BACKENDLESS_SECRET_KEY;
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/fileManager" element={<UserFileManager/>}></Route>
                 <Route path="/profile" element={<ProfilePage/>}></Route>
                 <Route path="/editProfile" element={<EditProfile/>}></Route>
+                <Route path="/myPlaces" element={<Places/>}></Route>
 
             </Routes>
         </Router>

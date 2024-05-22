@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Backendless from 'backendless';
 import './EditProfile.css';
 
-const ProfilePage = () => {
+const EditProfile = () => {
     const [user, setUser] = useState({
         email: '',
         name: '',
@@ -11,7 +11,8 @@ const ProfilePage = () => {
         country: '',
         newPassword: '',
         confirmPassword: '',
-        avatarUrl: '' // Додайте поле для URL аватарки
+        avatarUrl: '', // Додайте поле для URL аватарки
+        trackLocation: false, // Додайте поле для відстеження місця розташування
     });
 
     useEffect(() => {
@@ -27,7 +28,8 @@ const ProfilePage = () => {
                 age: currentUser.age,
                 gender: currentUser.gender,
                 country: currentUser.country,
-                avatarUrl: currentUser.avatarUrl // Отримайте URL аватарки
+                avatarUrl: currentUser.avatarUrl, // Отримайте URL аватарки
+                trackLocation: currentUser.trackLocation || false, // Отримайте дані про відстеження місця розташування
             });
         } catch (error) {
             console.error('Failed to fetch user data:', error);
@@ -35,10 +37,10 @@ const ProfilePage = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target;
         setUser(prevState => ({
             ...prevState,
-            [name]: value
+            [name]: type === 'checkbox' ? checked : value
         }));
     };
 
@@ -47,7 +49,7 @@ const ProfilePage = () => {
 
         try {
             const currentUser = Backendless.UserService.currentUser;
-            const updatedUser = { ...currentUser, ...user }; // Оновити об'єкт user перед оновленням
+            const updatedUser = { ...currentUser, ...user };
             await Backendless.UserService.update(updatedUser);
             alert('Профіль користувача успішно оновлено');
         } catch (error) {
@@ -109,7 +111,13 @@ const ProfilePage = () => {
                 </div>
                 <div>
                     <label>Країна:</label>
-                    <input type="text" name="country" value={user.country} onChange={handleChange}/>
+                    <input type="text" name="country" value={
+                        user.country} onChange={handleChange}/>
+                </div>
+                {/* Додати чекбокс для відстеження місця розташування */}
+                <div>
+                    <input type="checkbox" name="trackLocation" checked={user.trackLocation} onChange={handleChange}/>
+                    <label>Відслідковувати моє місце розташування</label>
                 </div>
                 <button type="submit">Зберегти зміни</button>
             </form>
@@ -117,4 +125,4 @@ const ProfilePage = () => {
     );
 };
 
-export default ProfilePage;
+export default EditProfile;

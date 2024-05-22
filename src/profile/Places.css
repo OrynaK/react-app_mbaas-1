@@ -1,0 +1,23 @@
+.places-container {
+    margin-top: 20px;
+}
+
+.add-place-form, .search-places, .my-places {
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    margin-right: 10px;
+}
+
+button {
+    margin-top: 10px;
+}
+
+.search-results img, .my-places img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+    margin-top: 10px;
+}
