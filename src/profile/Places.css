@@ -1,23 +1,112 @@
 .places-container {
-    margin-top: 20px;
+    padding: 20px;
+    font-family: Arial, sans-serif;
 }
 
-.add-place-form, .search-places, .my-places {
-    margin-bottom: 20px;
+.places-list {
+    list-style: none;
+    padding: 0;
 }
 
-input[type="text"] {
+.place-item {
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.place-image {
+    max-width: 100px;
     margin-right: 10px;
 }
 
-button {
-    margin-top: 10px;
+.place-details {
+    flex-grow: 1;
 }
 
-.search-results img, .my-places img {
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    display: block;
-    margin-top: 10px;
+.place-description {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.place-coordinates,
+.place-hashtags,
+.place-category,
+.place-likes {
+    margin-bottom: 5px;
+}
+
+button {
+    margin-right: 5px;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%;
+    max-width: 600px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    margin: 0;
+}
+
+.close {
+    background: none;
+    border: none;
+    font-size: 20px;
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-footer .btn {
+    margin-left: 10px;
+}
+
+.search-form {
+    margin-bottom: 20px;
+}
+
+.search-form input {
+    margin-right: 10px;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+.search-form button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
 }

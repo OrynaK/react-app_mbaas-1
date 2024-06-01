@@ -11,6 +11,11 @@ const ProfilePage = () => {
     const [avatarLink, setAvatarLink] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
     const [locationTracking, setLocationTracking] = useState(false);
+    const [placesUpdated, setPlacesUpdated] = useState(false);
+
+    const handlePlacesUpdated = () => {
+        setPlacesUpdated(!placesUpdated);
+    };
 
     useEffect(() => {
         retrieveUserData();
@@ -143,7 +148,7 @@ const ProfilePage = () => {
                     </div>
                     <Link to="/editProfile" className="button">Edit profile</Link>
                     <Link to="/fileManager" className="button">File management</Link>
-                    <Places userId={profile.objectId} />
+                    <Places userId={profile.objectId} profile={profile} placesUpdated={placesUpdated} onPlacesUpdated={handlePlacesUpdated}/>
                 </div>
             ) : (
                 <p>Loading profile data...</p>
