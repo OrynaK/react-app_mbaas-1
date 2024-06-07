@@ -14,6 +14,8 @@ const FileManager = () => {
     const [fileToShare, setFileToShare] = useState('');
     const user = Backendless.UserService.currentUser;
     const navigate = useNavigate();
+    const logger = Backendless.Logging.getLogger('ua.mbaas.FileLogger');
+
 
     useEffect(() => {
         fetchFilesList(currentDirectory);
@@ -24,9 +26,10 @@ const FileManager = () => {
             const directoryPath = `/user_files/${user.name}/${currentDirectory}/${newFolderName}`;
             await Backendless.Files.createDirectory(directoryPath);
             fetchFilesList(currentDirectory);
-            setNewFolderName(''); // Очистити поле вводу після створення папки
+            setNewFolderName('');
         } catch (error) {
             console.error('Failed to create folder:', error);
+            logger.error(`Failed to create folder: ${error.message}`);
         }
     };
 
@@ -39,6 +42,7 @@ const FileManager = () => {
             setDirectoriesList(directories);
         } catch (error) {
             console.error('Failed to fetch files:', error);
+            logger.error(`Failed to fetch files: ${error.message}`);
         }
     };
 
@@ -48,6 +52,7 @@ const FileManager = () => {
             await fetchFilesList(currentDirectory);
         } catch (error) {
             console.error('Failed to delete file:', error);
+            logger.error(`Failed to delete file: ${error.message}`);
         }
     };
 
@@ -78,6 +83,7 @@ const FileManager = () => {
             alert('Ви успішно поділились файлом');
         } catch (error) {
             console.error('Failed to share file:', error);
+            logger.error(`Failed to share file: ${error.message}`);
         } finally {
             handleShareModal(null, false);
         }

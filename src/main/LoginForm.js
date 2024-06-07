@@ -3,16 +3,17 @@ import React, { useState } from "react";
 import Backendless from "backendless";
 import { useNavigate, Link } from "react-router-dom";
 import ForgotPassword from "./ForgotPasswordForm";
-import EditProfile from "../profile/EditProfile"; // Імпорт компоненту для редагування профілю
-import "./LoginForm.css"; // Підключення файлу стилів
+import EditProfile from "../profile/EditProfile";
+import "./LoginForm.css";
 
 const LoginForm = () => {
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Додавання стану для визначення, чи користувач залогінений
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
+    const logger = Backendless.Logging.getLogger('ua.mbaas.AuthLogger');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -34,9 +35,10 @@ const LoginForm = () => {
             setPassword("");
             setError("");
             setIsLoggedIn(true);
-            navigate("/profile"); // Зміна перенаправлення після успішної авторизації
+            navigate("/profile");
         } catch (error) {
             console.error("Помилка авторизації:", error.message);
+            logger.error(`Login failed for user with name ${name}: ${error.message}`);
             setError(error.message);
         }
     };
@@ -48,7 +50,7 @@ const LoginForm = () => {
     return (
         <div className="login-form-container">
             {isLoggedIn ? (
-                <EditProfile /> // Відображення компоненту редагування профілю після успішної авторизації
+                <EditProfile />
             ) : (
                 <>
                     <h2 className="login-form-title">Авторизація</h2>

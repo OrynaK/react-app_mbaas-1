@@ -1,0 +1,52 @@
+.friends-container {
+    margin: 20px;
+}
+
+.friends-container h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.friends-container h3 {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.friends-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.friends-container li {
+    margin-bottom: 5px;
+}
+
+.friends-container button {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.friends-container input[type="text"],
+.friends-container input[type="number"] {
+    margin-bottom: 10px;
+    padding: 5px;
+    width: 200px;
+}
+
+.friends-container input[type="text"]:focus,
+.friends-container input[type="number"]:focus {
+    outline: none;
+}
+
+.friends-container .map-container {
+    margin-top: 20px;
+}
+
+.friends-container .map-container div {
+    height: 300px;
+    width: 100%;
+}
+
+.friends-container .map-container .leaflet-container {
+    height: 100%;
+}

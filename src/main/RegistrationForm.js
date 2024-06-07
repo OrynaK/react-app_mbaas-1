@@ -7,12 +7,15 @@ function RegistrationForm() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        confirmPassword: '',
         name: '',
         age: '',
         gender: '',
         country: '',
+        locationTrackingEnabled: false,
         error: '',
         passwordError: '',
+        confirmPasswordError: '',
         ageError: '',
         emailError: ''
     });
@@ -20,22 +23,24 @@ function RegistrationForm() {
     const navigate = useNavigate();
 
     const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value
+            [name]: type === 'checkbox' ? checked : value
         });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const { email, password, name, age, gender, country } = formData;
+        const { email, password, confirmPassword, name, age, gender, country, locationTrackingEnabled } = formData;
         let hasError = false;
 
         setFormData({
             ...formData,
             error: '',
             passwordError: '',
+            confirmPasswordError: '',
             ageError: '',
             emailError: ''
         });
@@ -43,6 +48,11 @@ function RegistrationForm() {
         try {
             if (password.length < 6) {
                 setFormData(prevState => ({ ...prevState, passwordError: 'Пароль повинен містити принаймні 6 символів' }));
+                hasError = true;
+            }
+
+            if (password !== confirmPassword) {
+                setFormData(prevState => ({ ...prevState, confirmPasswordError: 'Паролі не співпадають' }));
                 hasError = true;
             }
 
@@ -68,7 +78,8 @@ function RegistrationForm() {
                 name,
                 age: parsedAge,
                 gender,
-                country
+                country,
+                locationTrackingEnabled
             };
 
             const work_dir = `/user_files/${user.name}`;
@@ -78,27 +89,33 @@ function RegistrationForm() {
             const registeredUser = await Backendless.UserService.register(user);
 
             console.log('Successfully registered user:', registeredUser);
-            navigate("/fileManager");
+            navigate("/login");
             setFormData({
                 email: '',
                 password: '',
+                confirmPassword: '',
                 name: '',
                 age: '',
                 gender: '',
                 country: '',
+                locationTrackingEnabled: false,
                 error: '',
                 passwordError: '',
+                confirmPasswordError: '',
                 ageError: '',
                 emailError: ''
             });
         } catch (error) {
             console.error('Error registering user:', error);
-            setFormData(prevState => ({ ...prevState, error: 'Помилка при реєстрації користувача' }));
+            if (error.code === 3033) { // Error code for existing user
+                setFormData(prevState => ({ ...prevState, emailError: 'Користувач з такою електронною поштою вже існує' }));
+            } else {
+                setFormData(prevState => ({ ...prevState, error: 'Помилка при реєстрації користувача' }));
+            }
         }
     };
 
-
-    const { email, password, name, age, gender, country, error } = formData;
+    const { email, password, confirmPassword, name, age, gender, country, locationTrackingEnabled, error } = formData;
 
     return (
         <div className="registration-form">
@@ -114,6 +131,11 @@ function RegistrationForm() {
                     <label>Password:</label>
                     <input type="password" name="password" value={password} onChange={handleChange} required />
                     {formData.passwordError && <p className="error">{formData.passwordError}</p>}
+                </div>
+                <div>
+                    <label>Confirm Password:</label>
+                    <input type="password" name="confirmPassword" value={confirmPassword} onChange={handleChange} required />
+                    {formData.confirmPasswordError && <p className="error">{formData.confirmPasswordError}</p>}
                 </div>
                 <div>
                     <label>Ім'я:</label>
@@ -137,11 +159,14 @@ function RegistrationForm() {
                     <label>Країна:</label>
                     <input type="text" name="country" value={country} onChange={handleChange} required />
                 </div>
+                <div>
+                    <label>Location Tracking Enabled:</label>
+                    <input type="checkbox" name="locationTrackingEnabled" checked={locationTrackingEnabled} onChange={handleChange} />
+                </div>
                 <button type="submit">Зареєструватися</button>
             </form>
         </div>
     );
-
 }
 
 export default RegistrationForm;

@@ -1,0 +1,56 @@
+/* FeedbackForm.css */
+.feedback-form-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.feedback-form-title {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.feedback-button {
+    width: 100%;
+    padding: 10px;
+    background-color: plum;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.feedback-button:hover {
+    background-color: plum;
+}
+
+.feedback-error {
+    color: red;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.feedback-success {
+    color: green;
+    text-align: center;
+    margin-bottom: 20px;
+}

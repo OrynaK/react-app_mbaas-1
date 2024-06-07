@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
+import {Link} from 'react-router-dom'; // Import Link from react-router-dom
 import Backendless from 'backendless';
 import './ProfilePage.css';
-import Places from './Places';
+import Places from './places/Places';
+import Friends from "./Friends";
 
 const ProfilePage = () => {
     const [profile, setProfile] = useState(null);
@@ -12,6 +13,7 @@ const ProfilePage = () => {
     const [errorMsg, setErrorMsg] = useState('');
     const [locationTracking, setLocationTracking] = useState(false);
     const [placesUpdated, setPlacesUpdated] = useState(false);
+    const logger = Backendless.Logging.getLogger('ua.mbaas.LocationLogger');
 
     const handlePlacesUpdated = () => {
         setPlacesUpdated(!placesUpdated);
@@ -27,6 +29,20 @@ const ProfilePage = () => {
             setLocationTracking(profile.trackLocation || false);
         }
     }, [profile]);
+
+    useEffect(() => {
+        let locationInterval;
+        if (locationTracking) {
+            locationInterval = setInterval(() => {
+                updateLocation();
+            }, 60000);
+        }
+        return () => {
+            if (locationInterval) {
+                clearInterval(locationInterval);
+            }
+        };
+    }, [locationTracking]);
 
     const retrieveUserData = async () => {
         try {
@@ -74,7 +90,7 @@ const ProfilePage = () => {
         const {checked} = e.target;
         setLocationTracking(checked);
         try {
-            profile.trackLocation = checked;
+            profile.locationTrackingEnabled = checked;
             await Backendless.UserService.update(profile);
         } catch (error) {
             console.error('Failed to update track location:', error);
@@ -84,21 +100,18 @@ const ProfilePage = () => {
     const updateLocation = async () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async (position) => {
-                const {latitude, longitude} = position.coords;
-                console.log(latitude, longitude);
-                const updatedUser = {
-                    ...profile,
-                    my_location: new Backendless.Data.Point(latitude, longitude)
-                };
-                console.log(updatedUser);
+                const { latitude, longitude } = position.coords;
+                const activeUser = await Backendless.UserService.getCurrentUser();
+                const updatedUser = { ...activeUser, my_location: new Backendless.Data.Point().setLatitude(latitude).setLongitude(longitude) };
                 try {
                     await Backendless.UserService.update(updatedUser);
-                    setProfile(updatedUser); // Оновлюємо локальний стан користувача
                 } catch (error) {
-                    console.error('Failed to update location:', error);
+                    console.error('Failed to update user location:', error);
+                    logger.error(`Failed to update user location: ${error.message}`);
                 }
             }, (error) => {
                 console.error('Failed to get geolocation:', error);
+                logger.error(`Failed to get geolocation: ${error.message}`);
             });
         } else {
             console.error('Geolocation is not supported by this browser.');
@@ -146,9 +159,13 @@ const ProfilePage = () => {
                         <label>Track my location</label>
                         <button onClick={updateLocation}>Update Location</button>
                     </div>
+                    <Link to="/" className="button">Back to Main Screen</Link>
                     <Link to="/editProfile" className="button">Edit profile</Link>
                     <Link to="/fileManager" className="button">File management</Link>
-                    <Places userId={profile.objectId} profile={profile} placesUpdated={placesUpdated} onPlacesUpdated={handlePlacesUpdated}/>
+                    <Link to="/friends" className="button">Friends</Link>
+                    <Link to="/feedback" className="button">FeedBack</Link>
+                    <Places userId={profile.objectId} profile={profile} placesUpdated={placesUpdated}
+                            onPlacesUpdated={handlePlacesUpdated}/>
                 </div>
             ) : (
                 <p>Loading profile data...</p>
