@@ -63,6 +63,7 @@ const FileManager = () => {
             fetchFilesList(currentDirectory);
         } catch (error) {
             console.error('Failed to upload file:', error);
+            logger.error(`Failed to upload file: ${error.message}`);
         }
     };
 

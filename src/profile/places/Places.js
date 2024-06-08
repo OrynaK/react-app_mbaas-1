@@ -220,56 +220,63 @@ const Places = ({userId, profile, placesUpdated, onPlacesUpdated}) => {
             }
         };
 
-        const searchPlaces = async () => {
-            try {
-                const allPlaces = await Backendless.Data.of('Place').find();
-                const allCategories = await Backendless.Data.of('Category').find();
-                const allLikes = await Backendless.Data.of('Likes').find();
+    const searchPlaces = async () => {
+        try {
+            const allPlaces = await Backendless.Data.of('Place').find();
+            const allCategories = await Backendless.Data.of('Category').find();
+            const allLikes = await Backendless.Data.of('Likes').find();
 
-                const likesMap = new Map();
-                allLikes.forEach(like => {
-                    const placeId = like.placeId;
-                    if (!likesMap.has(placeId)) {
-                        likesMap.set(placeId, 0);
-                    }
-                    likesMap.set(placeId, likesMap.get(placeId) + 1);
-                });
-
-                const categoryMap = new Map();
-                allCategories.forEach(category => {
-                    categoryMap.set(category.objectId, category.name);
-                });
-
-                let filteredPlaces = allPlaces.map(place => ({
-                    ...place,
-                    categoryName: categoryMap.get(place.categoryId),
-                    likesCount: likesMap.get(place.objectId) || 0 // Додати кількість лайків
-                }));
-
-                if (searchQuery.description) {
-                    filteredPlaces = filteredPlaces.filter(place => place.description.toLowerCase().includes(searchQuery.description.toLowerCase()));
+            const likesMap = new Map();
+            allLikes.forEach(like => {
+                const placeId = like.placeId;
+                if (!likesMap.has(placeId)) {
+                    likesMap.set(placeId, 0);
                 }
-                if (searchQuery.category) {
-                    filteredPlaces = filteredPlaces.filter(place => place.categoryId === searchQuery.category);
-                }
+                likesMap.set(placeId, likesMap.get(placeId) + 1);
+            });
 
-                if (searchQuery.radius && searchQuery.location) {
-                    filteredPlaces = filteredPlaces.filter(place => {
-                        const distance = getDistanceFromLatLonInKm(
-                            searchQuery.location.lat,
-                            searchQuery.location.lng,
-                            place.location.coordinates[1],
-                            place.location.coordinates[0]
-                        );
-                        return distance <= searchQuery.radius;
-                    });
-                }
+            const categoryMap = new Map();
+            allCategories.forEach(category => {
+                categoryMap.set(category.objectId, category.name);
+            });
 
-                setSearchResults(filteredPlaces);
-            } catch (error) {
-                console.error('Error searching places:', error);
+            let filteredPlaces = allPlaces.map(place => ({
+                ...place,
+                categoryName: categoryMap.get(place.categoryId),
+                likesCount: likesMap.get(place.objectId) || 0
+            }));
+
+            if (searchQuery.description) {
+                filteredPlaces = filteredPlaces.filter(place => place.description.toLowerCase().includes(searchQuery.description.toLowerCase()));
             }
-        };
+            if (searchQuery.category) {
+                filteredPlaces = filteredPlaces.filter(place => place.categoryId === searchQuery.category);
+            }
+
+            if (searchQuery.radius && searchQuery.location) {
+                const currentUser = await Backendless.UserService.getCurrentUser();
+                const currentUserLocation = currentUser.my_location;
+
+                if (!currentUserLocation) {
+                    alert("Current user's location not available.");
+                    return;
+                }
+
+                filteredPlaces = filteredPlaces.filter(place => {
+                    const distance = getDistance(
+                        { latitude: currentUserLocation.lat, longitude: currentUserLocation.lng },
+                        { latitude: place.location.coordinates[1], longitude: place.location.coordinates[0] }
+                    );
+                    return distance <= searchQuery.radius;
+                });
+            }
+
+            setSearchResults(filteredPlaces);
+        } catch (error) {
+            console.error('Error searching places:', error);
+        }
+    };
+
 
         const getCurrentLocation = () => {
             if (navigator.geolocation) {
@@ -310,22 +317,7 @@ const Places = ({userId, profile, placesUpdated, onPlacesUpdated}) => {
             });
         }, []);
 
-        const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
-            const R = 6371;
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c;
-            return distance;
-        };
 
-        const deg2rad = (deg) => {
-            return deg * (Math.PI / 180);
-        };
 
         const handleFileChange = (e) => {
             const file = e.target.files[0];
